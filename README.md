@@ -5,7 +5,7 @@
 
 ##  安裝與使用 
 
-1.  前往 [Releases](https://github.com/你的GitHub帳號/GSX-Status-Check/releases) 頁面下載最新版本的 `GSX Status Check.dmg`。
+1.  前往 [Releases](https://github.com/hsiao840412/GSX-Status-Check/releases) 頁面下載最新版本的 `GSX Status Check.dmg`。
 2.  開啟後將 App 拖入「應用程式」資料夾。
 3.  **首次開啟**：
     * 開啟 App。
