@@ -7,6 +7,7 @@ import AppKit
 // ==========================================
 struct ContentView: View {
     @StateObject private var vm = RepairViewModel()
+    @StateObject private var updater = UpdateManager()
     @State private var selectedTab = 0
     @State private var sortOrder = [KeyPathComparator(\RepairRecord.date)]
     @State private var isDraggingSA = false
@@ -240,6 +241,21 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 1000, minHeight: 700)
+        .task {
+                    // App 啟動時自動檢查
+                    updater.checkForUpdates()
+                }
+                .alert("發現新版本 \(updater.latestVersion)", isPresented: $updater.hasUpdate) {
+                    Button("前往下載") {
+                        if let url = updater.releaseURL {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
+                    Button("稍後", role: .cancel) { }
+                } message: {
+                    // 這裡顯示你在 GitHub 寫的 Release Notes
+                    Text(updater.releaseNotes)
+                }
     }
     
     
