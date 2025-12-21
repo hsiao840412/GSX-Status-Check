@@ -7,7 +7,7 @@ struct ResultTable: View {
     var showSelection: Bool // 控制是否顯示勾選欄
     var onCopy: (String) -> Void
     
-    // 1. 在這裡應用 sortOrder 進行實際排序
+    // 排序邏輯
     var sortedRecords: [RepairRecord] {
         records.sorted(using: sortOrder)
     }
@@ -24,10 +24,9 @@ struct ResultTable: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            // 2. 傳入 sortedRecords 確保畫面顯示的是排序後的結果
             Table(sortedRecords, sortOrder: $sortOrder) {
                 
-                // 3. 使用 if 條件式完全移除選取欄位
+                // 選取欄位
                 if showSelection {
                     TableColumn("選取") { r in
                         Toggle("", isOn: Binding(
@@ -42,12 +41,13 @@ struct ResultTable: View {
                     .width(40)
                 }
                 
-                // 其他欄位 (保持 value 參數以支援排序)
+                // === GSX 單號 (白底藍色 Safari) ===
                 TableColumn("GSX 單號", value: \.gsxID) { r in cellGSX(r) }
-                    .width(min: 120)
+                    .width(min: 150)
                 
+                // === RMA 單號 (白底藍色 Safari) ===
                 TableColumn("RMA 單號", value: \.rmaID) { r in cellRMA(r) }
-                    .width(min: 120)
+                    .width(min: 150)
                 
                 TableColumn("SA 狀態", value: \.saStatus) { r in cellSAStatus(r) }
                     .width(min: 100)
@@ -55,40 +55,94 @@ struct ResultTable: View {
                 TableColumn("GSX 狀態", value: \.gsxStatus) { r in cellGSXStatus(r) }
                     .width(min: 150)
                 
-                // 修正：移除 value: \.isAnomaly，因為 Bool 不能直接排序
                 TableColumn("異常") { r in cellAnomaly(r) }
                     .width(50)
             }
-            .onChange(of: sortOrder) { _, _ in
-                // 因為使用了 computed property (sortedRecords)，畫面會自動更新
-            }
+            .onChange(of: sortOrder) { _, _ in }
             .scrollContentBackground(.hidden)
         }
     }
     
-    // MARK: - 提取 Cell 視圖
+    // MARK: - 輔助功能：開啟網頁
+    private func openURL(_ urlString: String) {
+        if let url = URL(string: urlString) {
+            NSWorkspace.shared.open(url)
+        }
+    }
+    
+    // MARK: - Cell 視圖
     
     @ViewBuilder
     private func cellGSX(_ r: RepairRecord) -> some View {
-        Text(r.gsxID)
-            .font(.system(.body, design: .monospaced))
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
-            .onTapGesture(count: 2) { onCopy(r.gsxID) }
-            .contextMenu { Button("複製單號") { onCopy(r.gsxID) } }
-            .help("雙擊複製 GSX 單號")
+        HStack {
+            // 單號文字
+            Text(r.gsxID)
+                .font(.system(.body, design: .monospaced))
+                .foregroundStyle(.white)
+                .contentShape(Rectangle())
+                .onTapGesture(count: 2) { onCopy(r.gsxID) }
+            
+            Spacer() // 將按鈕推到右邊
+            
+            // GSX 按鈕 (白底藍色 Safari)
+            if r.gsxID != "-" && !r.gsxID.isEmpty {
+                Button(action: {
+                    openURL("https://gsx2.apple.com/repairs/\(r.gsxID)")
+                }) {
+                    Image(systemName: "safari.fill")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(.blue) // 藍色圖示
+                        .padding(6)
+                        .background(Circle().fill(Color.white)) // 白色背景
+                        .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
+                }
+                .buttonStyle(.plain)
+                .help("在瀏覽器開啟 GSX")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contextMenu {
+            Button("複製單號") { onCopy(r.gsxID) }
+            Button("開啟 GSX 網頁") {
+                openURL("https://gsx2.apple.com/repairs/\(r.gsxID)")
+            }
+        }
     }
     
     @ViewBuilder
     private func cellRMA(_ r: RepairRecord) -> some View {
-        Text(r.rmaID)
-            .foregroundStyle(.white.opacity(0.8))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
-            .onTapGesture(count: 2) { onCopy(r.rmaID) }
-            .contextMenu { Button("複製 RMA") { onCopy(r.rmaID) } }
-            .help("雙擊複製 RMA 單號")
+        HStack {
+            // 單號文字
+            Text(r.rmaID)
+                .foregroundStyle(.white.opacity(0.8))
+                .contentShape(Rectangle())
+                .onTapGesture(count: 2) { onCopy(r.rmaID) }
+            
+            Spacer() // 將按鈕推到右邊
+            
+            // RMA 按鈕 (白底藍色 Safari，樣式統一)
+            if r.rmaID != "-" && !r.rmaID.isEmpty {
+                Button(action: {
+                    openURL("https://rma0.studioarma.com/rma/?m=ticket-common&op=view&id=\(r.rmaID)")
+                }) {
+                    Image(systemName: "safari.fill")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(.blue) // 藍色圖示
+                        .padding(6)
+                        .background(Circle().fill(Color.white)) // 白色背景
+                        .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
+                }
+                .buttonStyle(.plain)
+                .help("開啟 RMA 系統")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contextMenu {
+            Button("複製 RMA") { onCopy(r.rmaID) }
+            Button("開啟 RMA 網頁") {
+                openURL("https://rma0.studioarma.com/rma/?m=ticket-common&op=view&id=\(r.rmaID)")
+            }
+        }
     }
     
     @ViewBuilder

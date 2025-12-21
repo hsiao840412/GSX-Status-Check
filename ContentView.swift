@@ -71,7 +71,7 @@ struct ContentView: View {
                                 .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 2)
                             
                             HStack(spacing: 6) {
-                                Text("v4.7")
+                                Text("v4.8")
                                     .font(.system(size: 10, weight: .bold))
                                     .foregroundStyle(.white.opacity(0.7))
                                     .padding(.horizontal, 6)
@@ -172,7 +172,7 @@ struct ContentView: View {
                         
                         // 雙擊複製提示
                         if !currentRecords.isEmpty {
-                            Text("💡 雙擊單號即可複製")
+                            Text("💡 雙擊單號即可複製，點擊右側Safari圖案可直接開啟網頁")
                                 .font(.caption)
                                 .foregroundStyle(.white.opacity(0.5))
                                 .padding(.trailing, 10)
