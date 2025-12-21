@@ -71,7 +71,7 @@ struct ContentView: View {
                                 .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 2)
                             
                             HStack(spacing: 6) {
-                                Text("v4.6")
+                                Text("v4.7")
                                     .font(.system(size: 10, weight: .bold))
                                     .foregroundStyle(.white.opacity(0.7))
                                     .padding(.horizontal, 6)
